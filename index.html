@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Page Application</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 300px; margin: 50px auto; text-align: center; }
+        input { display: block; width: 100%; margin: 10px 0; padding: 8px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        .error { color: red; }
+        ul { list-style: none; padding: 0; }
+        li { display: flex; justify-content: space-between; padding: 8px 0; }
+        .delete { color: red; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div class="container" id="loginSection">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p class="error" id="loginError"></p>
+        <p>Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+    </div>
+
+    <!-- Signup Section -->
+    <div class="container hidden" id="signupSection">
+        <h2>Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="Email" required>
+        <input type="password" id="signupPassword" placeholder="Password" required>
+        <button onclick="signup()">Sign Up</button>
+        <p class="error" id="signupError"></p>
+        <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+    </div>
+
+    <!-- To-Do List Section -->
+    <div class="container hidden" id="todoSection">
+        <h2>To-Do List</h2>
+        <input type="text" id="taskInput" placeholder="Add a new task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList"></ul>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        // Show/Hide Sections
+        function showSignup() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('signupSection').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signupSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        function showTodo() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('todoSection').classList.remove('hidden');
+            loadTasks();
+        }
+
+        // Signup Function
+        function signup() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            if (validateEmail(email) && password) {
+                const user = { email, password };
+                localStorage.setItem('user', JSON.stringify(user));
+                alert("Signup successful!");
+                showLogin();
+            } else {
+                document.getElementById('signupError').innerText = "Please enter a valid email and password.";
+            }
+        }
+
+        // Login Function
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+
+            if (storedUser && storedUser.email === email && storedUser.password === password) {
+                alert("Login successful!");
+                showTodo();
+            } else {
+                document.getElementById('loginError').innerText = "Invalid email or password.";
+            }
+        }
+
+        // Logout Function
+        function logout() {
+            document.getElementById('todoSection').classList.add('hidden');
+            showLogin();
+        }
+
+        // To-Do List Functions
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${task} <span class="delete" onclick="deleteTask(${index})">X</span>`;
+                taskList.appendChild(li);
+            });
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const task = taskInput.value.trim();
+
+            if (task) {
+                const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                tasks.push(task);
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                taskInput.value = '';
+                loadTasks();
+            }
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks'));
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+        }
+
+        // Email validation function
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+    </script>
+</body>
+</html>
